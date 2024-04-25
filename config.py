@@ -1,9 +1,9 @@
 import torch
 
-BATCH_SIZE = 4 # Increase / decrease according to GPU memeory.
-RESIZE_TO = 720 # Resize the image for training and transforms.
-NUM_EPOCHS = 40 # Number of epochs to train for.
-NUM_WORKERS = 4 # Number of parallel workers for data loading.
+BATCH_SIZE = 16 # Increase / decrease according to GPU memeory.
+RESIZE_TO = 950 # Resize the image for training and transforms.
+NUM_EPOCHS = 1000 # Number of epochs to train for.
+NUM_WORKERS = 8 # Number of parallel workers for data loading.
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -14,7 +14,7 @@ VALID_DIR = 'data/vehicle-detection-from-satellite-images-data-set/valid'
 
 # Classes: 0 index is reserved for background.
 CLASSES = [
-    '__background__', 'minivan', 'car'
+    '__background__', 'car'
 ]
 
 NUM_CLASSES = len(CLASSES)

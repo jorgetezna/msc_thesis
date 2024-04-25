@@ -114,7 +114,8 @@ if __name__ == '__main__':
     print(f"Number of validation samples: {len(valid_dataset)}\n")
 
     # Initialize the model and move to the computation device.
-    model = create_model(num_classes=NUM_CLASSES)
+    checkpoint_path = '/zhome/fa/a/163291/msc_thesis/outputs/outputs_2_round/best_model.pth'
+    model = create_model(num_classes=NUM_CLASSES, checkpoint_path=checkpoint_path)
     model = model.to(DEVICE)
     print(model)
     # Total parameters and trainable parameters.

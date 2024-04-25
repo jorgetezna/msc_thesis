@@ -36,7 +36,10 @@ class CustomDataset(Dataset):
         # Read and preprocess the image.
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
+
+        # Conditionally resize the image if width and height are not None
         image_resized = cv2.resize(image, (self.width, self.height))
+ 
         image_resized /= 255.0
         
         # Capture the corresponding XML file for getting the annotations.
@@ -59,23 +62,19 @@ class CustomDataset(Dataset):
             labels.append(self.classes.index(member.find('name').text))
             
             # Left corner x-coordinates.
-            xmin = int(member.find('bndbox').find('xmin').text)
+            xmin = int(float(member.find('bndbox').find('xmin').text))
             # Right corner x-coordinates.
-            xmax = int(member.find('bndbox').find('xmax').text)
+            xmax = int(float(member.find('bndbox').find('xmax').text))
             # Left corner y-coordinates.
-            ymin = int(member.find('bndbox').find('ymin').text)
+            ymin = int(float(member.find('bndbox').find('ymin').text))
             # Right corner y-coordinates.
-            ymax = int(member.find('bndbox').find('ymax').text)
-            
-            # Resize the bounding boxes according 
-            # to resized image `width`, `height`.
-            xmin_final = (xmin/image_width)*self.width
-            xmax_final = (xmax/image_width)*self.width
-            ymin_final = (ymin/image_height)*self.height
-            ymax_final = (ymax/image_height)*self.height
+            ymax = int(float(member.find('bndbox').find('ymax').text))
 
-            # Check that max coordinates are at least one pixel
-            # larger than min coordinates.
+            xmin_final = (xmin / image_width) * self.width if self.width is not None else xmin
+            xmax_final = (xmax / image_width) * self.width if self.width is not None else xmax
+            ymin_final = (ymin / image_height) * self.height if self.height is not None else ymin
+            ymax_final = (ymax / image_height) * self.height if self.height is not None else ymax
+            
             if xmax_final == xmin_final:
                 xmax_final += 1
             if ymax_final == ymin_final:
