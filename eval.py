@@ -45,12 +45,12 @@ def validate(valid_data_loader, model):
 if __name__ == '__main__':
     # Load the best model and trained weights.
     model = create_model(num_classes=NUM_CLASSES)
-    checkpoint = torch.load('outputs/best_model.pth', map_location=DEVICE)
+    checkpoint = torch.load('/Users/jorgemartinez/thesis_retinanet/RetinaNet_Custom_dataset/outputs_hpc/outputs_2_round_2/outputs/best_model.pth', map_location=DEVICE)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.to(DEVICE).eval()
 
     test_dataset = create_valid_dataset(
-        'data/vehicle-detection-from-satellite-images-data-set/test'
+        '/Users/jorgemartinez/thesis_retinanet/RetinaNet_Custom_dataset/data/combined/color/test/94.13'
     )
     test_loader = create_valid_loader(test_dataset, num_workers=NUM_WORKERS)
 

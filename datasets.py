@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import os
 import glob as glob
+from PIL import Image, ImageOps
+
 
 from xml.etree import ElementTree as et
 from config import (
@@ -10,6 +12,22 @@ from config import (
 )
 from torch.utils.data import Dataset, DataLoader
 from custom_utils import collate_fn, get_train_transform, get_valid_transform
+
+def resize_and_pad(img, target_size):
+    # Resize maintaining aspect ratio
+    original_size = img.size
+    ratio = min(target_size[0] / original_size[0], target_size[1] / original_size[1])
+    new_size = tuple([int(x * ratio) for x in original_size])
+    img = img.resize(new_size, Image.ANTIALIAS)
+
+    # Calculate padding
+    delta_w = target_size[0] - new_size[0]
+    delta_h = target_size[1] - new_size[1]
+    padding = (delta_w // 2, delta_h // 2, delta_w - (delta_w // 2), delta_h - (delta_h // 2))
+    
+    # Pad the resized image
+    img = ImageOps.expand(img, padding, fill='black')  # You can change fill color based on your needs
+    return img
 
 # The dataset class.
 class CustomDataset(Dataset):
@@ -74,7 +92,7 @@ class CustomDataset(Dataset):
             xmax_final = (xmax / image_width) * self.width if self.width is not None else xmax
             ymin_final = (ymin / image_height) * self.height if self.height is not None else ymin
             ymax_final = (ymax / image_height) * self.height if self.height is not None else ymax
-            
+
             if xmax_final == xmin_final:
                 xmax_final += 1
             if ymax_final == ymin_final:
@@ -84,7 +102,6 @@ class CustomDataset(Dataset):
                 xmax_final = self.width
             if ymax_final > self.height:
                 ymax_final = self.height
-            
             boxes.append([xmin_final, ymin_final, xmax_final, ymax_final])
         
         # Bounding box to tensor.

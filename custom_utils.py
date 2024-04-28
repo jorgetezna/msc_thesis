@@ -66,7 +66,7 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 # Define the training tranforms.
-def get_train_transform():
+"""def get_train_transform():
     return A.Compose([
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.5),
@@ -74,6 +74,14 @@ def get_train_transform():
         A.Blur(blur_limit=3, p=0.1),
         A.MotionBlur(blur_limit=3, p=0.1),
         A.MedianBlur(blur_limit=3, p=0.1),
+        ToTensorV2(p=1.0),
+    ], bbox_params={
+        'format': 'pascal_voc',
+        'label_fields': ['labels']
+    })"""
+
+def get_train_transform():
+    return A.Compose([
         ToTensorV2(p=1.0),
     ], bbox_params={
         'format': 'pascal_voc',

@@ -31,6 +31,9 @@ import torch
 import matplotlib.pyplot as plt
 import time
 import os
+import matplotlib.patches as patches
+import numpy as np
+
 
 plt.style.use('ggplot')
 
@@ -67,6 +70,28 @@ def train(train_data_loader, model):
         prog_bar.set_description(desc=f"Loss: {loss_value:.4f}")
     return loss_value
 
+def visualize_bbox(img, bbox, label, color, linewidth=2):
+    """Visualize one bounding box"""
+    ax = plt.gca()
+    ax.text(bbox[0], bbox[1], f'{label}', color='white', backgroundcolor=color, fontsize=8, weight='bold')
+    rect = patches.Rectangle((bbox[0], bbox[1]), bbox[2] - bbox[0], bbox[3] - bbox[1], linewidth=linewidth, edgecolor=color, facecolor='none')
+    ax.add_patch(rect)
+
+def show_preds_targets(images, preds, targets):
+    """Show images with predictions and targets"""
+    for img, pred, target in zip(images, preds, targets):
+        fig, ax = plt.subplots(1)
+        img = img.permute(1, 2, 0)  # CHW to HWC
+        ax.imshow(img.cpu().numpy())
+        
+        for box, label in zip(pred['boxes'], pred['labels']):
+            visualize_bbox(img, box, label, 'red')
+        
+        for box, label in zip(target['boxes'], target['labels']):
+            visualize_bbox(img, box, label, 'green')
+        
+        plt.show()
+
 # Function for running validation iterations.
 def validate(valid_data_loader, model):
     print('Validating')
@@ -85,7 +110,7 @@ def validate(valid_data_loader, model):
         with torch.no_grad():
             outputs = model(images, targets)
 
-        # For mAP calculation using Torchmetrics.
+        """# For mAP calculation using Torchmetrics.
         #####################################
         for i in range(len(images)):
             true_dict = dict()
@@ -97,7 +122,22 @@ def validate(valid_data_loader, model):
             preds_dict['labels'] = outputs[i]['labels'].detach().cpu()
             preds.append(preds_dict)
             target.append(true_dict)
-        #####################################
+        #####################################"""
+        for i in range(len(images)):
+            true_dict = {
+                'boxes': targets[i]['boxes'].detach().cpu(),
+                'labels': targets[i]['labels'].detach().cpu()
+            }
+            preds_dict = {
+                'boxes': outputs[i]['boxes'].detach().cpu(),
+                'scores': outputs[i]['scores'].detach().cpu(),
+                'labels': outputs[i]['labels'].detach().cpu()
+            }
+            preds.append(preds_dict)
+            target.append(true_dict)
+
+        """if i < 5:  # Visualize first 5 images
+            show_preds_targets(images, preds, target)"""
 
     metric.reset()
     metric.update(preds, target)
@@ -114,8 +154,9 @@ if __name__ == '__main__':
     print(f"Number of validation samples: {len(valid_dataset)}\n")
 
     # Initialize the model and move to the computation device.
-    checkpoint_path = '/zhome/fa/a/163291/msc_thesis/outputs/outputs_2_round/best_model.pth'
-    model = create_model(num_classes=NUM_CLASSES, checkpoint_path=checkpoint_path)
+    #checkpoint_path = '/Users/jorgemartinez/thesis_retinanet/RetinaNet_Custom_dataset/outputs_hpc/02_outputs_2_round_small_dataset/best_model.pth'
+    #model = create_model(num_classes=NUM_CLASSES, checkpoint_path=checkpoint_path)
+    model = create_model(num_classes=NUM_CLASSES)
     model = model.to(DEVICE)
     print(model)
     # Total parameters and trainable parameters.
