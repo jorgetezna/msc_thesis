@@ -2,37 +2,20 @@ import torchvision
 import torch
 
 from functools import partial
-from torchvision.models.detection import retinanet_resnet50_fpn_v2, RetinaNet_ResNet50_FPN_V2_Weights
-from torchvision.models.detection.retinanet import RetinaNetClassificationHead, RetinaNetRegressionHead
-from torchvision.models.detection.anchor_utils import AnchorGenerator
+from torchvision.models.detection import RetinaNet_ResNet50_FPN_V2_Weights
+from torchvision.models.detection.retinanet import RetinaNetClassificationHead
 
 #def create_model(num_classes=91, checkpoint_path = None):
 def create_model(num_classes=91):
-    # Load the pretrained RetinaNet model
-    model = torchvision.models.detection.retinanet_resnet50_fpn_v2(pretrained=True, weights=RetinaNet_ResNet50_FPN_V2_Weights.COCO_V1)
-
-
-    anchor_generator = AnchorGenerator(
-        sizes=((16,), (32,), (48,), (64,), (96,)),  # A tuple of tuples, each corresponds to a feature map level
-        aspect_ratios=((0.5, 1.0, 1.5, 2.0),) * 5   # Repeat the aspect ratio tuple for each feature map level
+    model = torchvision.models.detection.retinanet_resnet50_fpn_v2(
+        weights=RetinaNet_ResNet50_FPN_V2_Weights.COCO_V1
     )
+    num_anchors = model.head.classification_head.num_anchors
 
-    # Apply the custom anchor generator to the model
-    model.anchor_generator = anchor_generator
-
-    # Number of anchors calculated from the custom anchor generator
-    num_anchors = anchor_generator.num_anchors_per_location()[0]
-
-    # Replace the classification and regression heads
     model.head.classification_head = RetinaNetClassificationHead(
-        in_channels=256,  # Typically 256 for RetinaNet heads
-        num_anchors=num_anchors,
-        num_classes=num_classes,
-        norm_layer=partial(torch.nn.GroupNorm, 32)
-    )
-    model.head.regression_head = RetinaNetRegressionHead(
         in_channels=256,
         num_anchors=num_anchors,
+        num_classes=num_classes,
         norm_layer=partial(torch.nn.GroupNorm, 32)
     )
 

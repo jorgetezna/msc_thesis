@@ -40,7 +40,7 @@ COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 
 # Load the best model and trained weights.
 model = create_model(num_classes=NUM_CLASSES)
-checkpoint = torch.load('/Users/jorgemartinez/thesis_retinanet/RetinaNet_Custom_dataset/outputs_hpc/outputs_2_round_2/outputs/best_model.pth', map_location=DEVICE)
+checkpoint = torch.load('/Users/jorgemartinez/thesis_retinanet/RetinaNet_Custom_dataset/outputs/best_model.pth', map_location=DEVICE)
 model.load_state_dict(checkpoint['model_state_dict'])
 model.to(DEVICE).eval()
 
