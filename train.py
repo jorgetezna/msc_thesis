@@ -37,7 +37,7 @@ import numpy as np
 
 plt.style.use('ggplot')
 
-seed = 42
+seed = 13
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 torch.cuda.manual_seed_all(seed) 

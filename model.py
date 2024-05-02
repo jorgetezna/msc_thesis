@@ -5,27 +5,35 @@ from functools import partial
 from torchvision.models.detection import RetinaNet_ResNet50_FPN_V2_Weights
 from torchvision.models.detection.retinanet import RetinaNetClassificationHead
 
+import torchvision.models.detection
+import torchvision.models as models
+from torchvision.models.detection.retinanet import RetinaNet, retinanet_resnet50_fpn, RetinaNetHead
+from torchvision.ops.feature_pyramid_network import LastLevelP6P7
+from torchvision.models.detection.anchor_utils import AnchorGenerator
+from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
+
+
 #def create_model(num_classes=91, checkpoint_path = None):
-def create_model(num_classes=91):
-    model = torchvision.models.detection.retinanet_resnet50_fpn_v2(
-        weights=RetinaNet_ResNet50_FPN_V2_Weights.COCO_V1
-    )
-    num_anchors = model.head.classification_head.num_anchors
+def create_model(num_classes):
+    # Load a pre-trained ResNet-34 model
+    backbone = resnet_fpn_backbone('resnet34', pretrained=True, trainable_layers=3,
+                                   returned_layers=[2, 3, 4], extra_blocks=LastLevelP6P7(256, 256))
+    
+    # Define the anchor generator for RetinaNet
+    anchor_generator = AnchorGenerator(
+        sizes=((32,), (64,), (128,), (256,), (512,)),
+        aspect_ratios=((0.5, 1.0, 2.0),) * 5)
 
-    model.head.classification_head = RetinaNetClassificationHead(
+    # Define the head of the RetinaNet using the number of expected features from the FPN and the number of classes
+    head = RetinaNetHead(
         in_channels=256,
-        num_anchors=num_anchors,
-        num_classes=num_classes,
-        norm_layer=partial(torch.nn.GroupNorm, 32)
-    )
-
-
-    """if checkpoint_path:
-        checkpoint = torch.load(checkpoint_path)
-        if 'model_state_dict' in checkpoint:
-            model.load_state_dict(checkpoint['model_state_dict'])
-        else:
-            model.load_state_dict(checkpoint)"""
+        num_anchors=anchor_generator.num_anchors_per_location()[0],
+        num_classes=num_classes)
+    
+    # Create the RetinaNet model
+    model = RetinaNet(backbone, num_classes=num_classes,
+                      anchor_generator=anchor_generator)
+    
     return model
 
 if __name__ == '__main__':

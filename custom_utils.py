@@ -3,6 +3,10 @@ import cv2
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+from albumentations import ReplayCompose
+from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms
+import os
 
 from albumentations.pytorch import ToTensorV2
 from config import DEVICE, CLASSES
@@ -66,27 +70,30 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 # Define the training tranforms.
-"""def get_train_transform():
+def get_train_transform():
     return A.Compose([
         A.HorizontalFlip(p=0.5),
-        A.VerticalFlip(p=0.5),
-        A.Rotate(limit=45),
-        A.Blur(blur_limit=3, p=0.1),
-        A.MotionBlur(blur_limit=3, p=0.1),
-        A.MedianBlur(blur_limit=3, p=0.1),
+        A.VerticalFlip(p=0.2),
+        A.RandomRotate90(p=0.5),
+        A.Rotate(limit=45, p=0.5),
+        A.RandomBrightnessContrast(p=0.2),
+        A.GaussianBlur(blur_limit=(3, 7), p=0.05),
+        A.RandomResizedCrop(height=512, width=512, scale=(0.8, 1.0), ratio=(0.75, 1.33), p=0.5),
+        A.GaussNoise(p=0.05),
+        ToTensorV2(p=1.0)  # Always end with converting to tensor
+    ], bbox_params=A.BboxParams(
+        format='pascal_voc',
+        label_fields=['labels']
+    ))
+
+
+"""def get_train_transform():
+    return A.Compose([
         ToTensorV2(p=1.0),
     ], bbox_params={
         'format': 'pascal_voc',
         'label_fields': ['labels']
     })"""
-
-def get_train_transform():
-    return A.Compose([
-        ToTensorV2(p=1.0),
-    ], bbox_params={
-        'format': 'pascal_voc',
-        'label_fields': ['labels']
-    })
 
 # Define the validation transforms.
 def get_valid_transform():
